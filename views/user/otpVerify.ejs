@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/otpVerify.css" />
+    <title>Verify Account</title>
+  </head>
+  <body>
+    <section>
+        <div class="container">
+            <h1>Verify Your Account</h1>
+            <p>We emailed you the six digit code to <span style="color: springgreen;"><%= email %> </span>  
+            Enter the code below to confirm your email address.</p>
+            <form action="/otpVerify" method="post">
+                <div class="code-container">
+                    <input type="number" name="a" class="code" placeholder="0" min="0" max="9" required>
+                    <input type="number" name="b" class="code" placeholder="0" min="0" max="9" required>
+                    <input type="number" name="c" class="code" placeholder="0" min="0" max="9" required>
+                    <input type="number" name="d" class="code" placeholder="0" min="0" max="9" required>
+                    <input type="number" name="e" class="code" placeholder="0" min="0" max="9" required>
+                    <input type="number" name="f" class="code" placeholder="0" min="0" max="9" required>
+                </div>
+                <button type="submit">Verify</button> 
+            </form>
+        </div>
+        <div class="messages">
+            <% if(typeof FRMessage !== 'undefined'){ %>
+                <h4 style="color: red;"><%= FRMessage %></h4>
+            <% } %>
+            <% if(typeof SRMessage !== 'undefined'){ %>
+                <p style="color: green;"><%= SRMessage %></p>
+            <% } %>
+        </div>
+    </section>
+    <script src="/js/otpVerify.js"></script>
+  </body>
+</html>
