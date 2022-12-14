@@ -2,10 +2,11 @@ const user = require('../models/userModel');
 const product = require('../models/productModel');
 const category = require('../models/categoryModel');
 const banner = require('../models/bannerModel');
+const cart = require('../models/cartModel');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
 const nodemailer = require('nodemailer');
-const { Query } = require('mongoose');
+const { Query, default: mongoose } = require('mongoose');
 let signupName, signupEmail, signupPassword, OTP, lowest, highest;
 
 //For OTP
@@ -77,9 +78,7 @@ const loginLoad = async (req, res) => {
 //To verify login
 const verifyLogin = async (req, res) => {
     try {
-        
-        const email = req.body.email;
-        const password = req.body.password;
+        const {email, password} = req.body;
         const userData = await user.findOne({ email: email });
         if (userData) {
             const passwordMatch = await bcrypt.compare(password, userData.password);
@@ -312,6 +311,65 @@ const shopLoad = async (req, res) => {
     }
 }
 
+//To display cart page to user
+const cartLoad = async (req, res) => {
+    const categoryData = await category.find({blockStatus:0});
+    try {
+        if (req.session.user_id) {
+            const user = req.session.user_id;
+            const user_id = mongoose.Types.ObjectId(user);
+        }
+       res.render('cart', {category: categoryData});
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+//To add products into cart
+const addToCart = async (req, res) => {
+    try {
+        if (req.session.user_id) {
+            const proId = req.params.id;
+            const productId = new mongoose.Types.ObjectId(proId)
+            const userId = req.session.user_id;
+            console.log('userId = ', userId);
+            
+            const userExist = await cart.findOne({userId});
+
+            console.log('userExist', userExist);
+
+            if(userExist) {
+                console.log('inside userExist');
+                const productExist = await cart.findOne({ $and: [ {userId}, {cartItems: {$elemMatch: {productId} } } ] });
+                console.log('prdouctExist = ', productExist);
+                if (productExist) {
+                    console.log('inside productExist');
+                    await cart.findOneAndUpdate({ $and: [{ userId }, { "cartItems.productId": productId }] }, { $inc: { "cartItems.$.quantity": 1 } });
+                    res.send({ success: true });
+                } else {
+                    console.log('inside productExist else');
+                    await cart.updateOne({ userId }, { $push: { cartItems: { productId, quantity: 1 } } });
+                    res.send({ success: true });
+                }
+            } else {
+                console.log('inside userExist else');
+                const cartDetails = new cart ({ userId, cartItems: [{ productId, quantity: 1 }] })
+                await cartDetails.save()
+                    .then(() => {
+                        res.send('success');
+                    })
+                    .catch((err) => {
+                        console.log(err.message);
+                    })
+            }
+        } else {
+            console.log('You are not logged in');
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
 module.exports = {
     landingPage,
     loginLoad,
@@ -325,5 +383,7 @@ module.exports = {
     categoryLoad,
     otpVerifyLoad,
     otpVerify,
-    shopLoad
+    shopLoad,
+    cartLoad,
+    addToCart
 }

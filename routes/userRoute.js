@@ -38,4 +38,7 @@ userRoute.get('/product/:id',userController.productLoad);
 userRoute.get('/category/:id',userController.categoryLoad);
 
 userRoute.get('/shop', userController.shopLoad);
+
+userRoute.get('/cart',userController.cartLoad);
+userRoute.get('/addToCart/:id',userController.addToCart);
 module.exports = userRoute;
