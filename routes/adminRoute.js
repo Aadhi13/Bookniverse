@@ -5,6 +5,7 @@ const adminController = require('../controllers/adminController');
 const categoryController = require('../controllers/categoryController');
 const productController = require('../controllers/productController');
 const bannerController = require('../controllers/bannerController');
+const couponController = require('../controllers/couponController');
 const auth = require('../middleware/adminAuth');
 const uploadToFile = require('../middleware/multer');
 const oneDay = 1000 * 60 * 60 * 24;
@@ -63,5 +64,12 @@ adminRoute.post('/newBanner',auth.isLogin,uploadToFile.single('image', 12),banne
 adminRoute.get('/editBanner',auth.isLogin,bannerController.loadEditBanner);
 adminRoute.post('/editBanner/:id',auth.isLogin,uploadToFile.single('image', 12),bannerController.editBanner);
 adminRoute.get('/deleteBanner',auth.isLogin,bannerController.deleteBanner);
+
+adminRoute.get('/coupons',auth.isLogin,couponController.loadCoupon);
+adminRoute.get('/newCoupon',auth.isLogin,couponController.loadNewCoupon);
+adminRoute.post('/newCoupon',auth.isLogin,couponController.addNewCoupon);
+adminRoute.get('/bStatusCoupon',auth.isLogin,couponController.bStatusCoupon);
+adminRoute.get('/editCoupon',auth.isLogin,couponController.loadEditCoupon);
+adminRoute.post('/editCoupon/:id',auth.isLogin,couponController.editCoupon);
 
 module.exports = adminRoute;

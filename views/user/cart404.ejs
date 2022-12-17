@@ -123,108 +123,20 @@
         </div>
     </div>
     <!-- Navbar End -->
-
-    <!-- Cart Start -->
-    <div class="container-fluid p-5">
-        <div class="row ">
-            <div style="" class="row col-lg-8 mb-5 px-5">
-                <% cartList.cartItems.forEach((p2) => { %>
-                    <div class="col-12 mt-" style="">
-                            <div  class="row ml-5">
-                                <div  class="col-md-2 product-img ml-5">
-                                    <img src="<%=p2.productId.imagePath%>" class="img-top" alt="">
-                                </div>
-                                <div class="col-md-6">
-                                    <div>Book Name: <span style="text-transform: uppercase; font-weight: 600; color: black;"><%=p2.productId.name%></span></div>
-                                    <div>Author Name: <span style="color:black"><%=p2.productId.author%></span></div>
-                                    <div>Publisher: <span style="color: black;"><%=p2.productId.publisher%></span></div>
-                                    <div class="row mt-2">
-                                        <div style="font-weight: 500; color: black;" id="price<%=p2.productId %>" class="col-3">Rs. <%=p2.productId.srp%></div>
-                                        <div style="text-decoration:line-through; color: #777777;" class="col-3">Rs. <%=p2.productId.mrp%></div>
-                                        <div style="font-weight: 400;" class="col-3 text-success"><%= Math.round(((p2.productId.mrp-p2.productId.srp)/p2.productId.mrp)*100)%>% off</div>
-                                        <div class="row col-9 mb-3">
-                                            <div class="ml-3 text-dark" style="font-weight: 500;" id="productTotal<%=p2.productId._id%>">Total Price: <%= p2.productId.srp*p2.quantity %></div>
-                                            <span class="ml-2" id="miniQuantity<%=p2.productId._id%>" style="font-weight: 400; color: #777777; font-size: 85%; text-align: right; margin-top: 2px;">
-                                                (<%=p2.quantity%> 
-                                                <% if(p2.quantity>1) { %>
-                                                    Items)
-                                                <% } else { %> 
-                                                    Item)
-                                                <% } %>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="mt- mb-">
-                                        <button class="btn-sm btn btn-danger btn-cart mr-2" onclick="removeFromCart('<%=p2.productId._id%>')">REMOVE</button>
-                                        <button class="btn-sm btn btn-warning btn-cart">BUY THIS PRODUCT</button>
-                                    </div>
-                                </div>
-                                <div class="col-md-1">
-                                    <div class="input-group quantity mx-auto" style="width: 100px;">
-                                        <div class="input-group-btn">
-                                            <button class="btn btn-sm btn-primary btn-minus" onclick="changeQuantity('<%=p2.productId._id%>',-1)" >
-                                            <i class="fa fa-minus"></i>
-                                            </button>
-                                        </div>
-                                        <input type="text" class="form-control form-control-sm bg-secondary text-center" id="quantity<%=p2.productId%>" value="<%= p2.quantity %>">
-                                        <div class="input-group-btn">
-                                            <button class="btn btn-sm btn-primary btn-plus" onclick="changeQuantity('<%=p2.productId._id%>',1)">
-                                                <i class="fa fa-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <hr width="82%">
-                    </div>
-                <% }) %> 
-            </div>
-            <div>
-                <h2><%message%></h2>
-            </div>
-
-            <!-- Coupen and price summary -->
-            <div class="col-lg-4">
-                <form class="mb-5" id="couponForm">
-                    <div class="input-group">
-                        <input type="text" name="couponCode" class="form-control p-4" placeholder="Coupon Code" required>
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" type="submit">Apply Coupon</button>
-                        </div>
-                    </div>
-                </form>
-                <p id="invalidCoupon" class="text-danger mt-1 mb-4 ml-1 d-none">Invalid coupon code</p>
-                <p id="couponApplied" class="text-success mt-1 mb-4 ml-1 d-none">Coupon Applied</p>
-                <div class="card border-secondary mb-5">
-                    <div class="card-header bg-secondary border-0">
-                        <h4 class="font-weight-semi-bold m-0">Cart Summary</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3 pt-1">
-                            <h6 class="font-weight-medium">Subtotal</h6>
-                            <h6 class="font-weight-medium" id="subtotal">Rs. <%=subTotal%></h6>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <h6 class="font-weight-medium">Shipping</h6>
-                            <h6 class="font-weight-medium" id="shippingcost">Rs. <%=shippingCost%></h6>
-                        </div>
-                    </div>
-                    <div class="card-footer border-secondary bg-transparent">
-                        <div class="d-flex justify-content-between mt-2">
-                            <h5 class="font-weight-bold">Total</h5>
-                            <h5 class="font-weight-bold" id="total">RS. <%=total%></h5>
-                        </div>
-                        <button class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button>
-                    </div>
-                </div>
-            </div>
+    <% if(typeof message !== 'undefined') {%> 
+        <div class="p-5 m-5" style="text-align: center;">
+            <h1 class="p-2   m-3" >Your cart is empty, continue shopping.</h1>
+            <h2 class="p-2 m-3"><a style="text-decoration: none;" href="/shop">Click here to go to shop page.</a></h2>
         </div>
-    </div>
-    <!-- Cart End -->
-
-
+    <% } else { %> 
+        <div class="p-5 m-5" style="text-align: center;">
+            <h1 class="p-2   m-3" >Your cart is empty, login to use cart functionality.</h1>
+            <h2 class="p-2 m-3"><a style="text-decoration: none;" href="/login">Click here to Login or Signup</a></h2>
+        </div>
+    <% } %> 
+   
     <!-- Footer Start -->
-    <div class="container-fluid bg-secondary text-dark mt-5 pt-5">
+    <div class="container-fluid bg-secondary text-dark  pt-5">
         <div class="row px-xl-5 pt-5">
             <div class="col-lg-4 col-md-12 mb-5 pr-3 pr-xl-5">
                 <a href="" class="text-decoration-none">

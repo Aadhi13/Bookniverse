@@ -9583,3 +9583,21 @@
     }
   }
   
+  .product-image2 {
+    width: 200px;
+  }
+
+  .product-img {
+    text-align: center;
+  }
+
+  .img-top {
+    width: 125px;
+    height: auto;
+    object-fit: cover;
+  }
+
+  .btn-cart {
+    border-radius: 5px;
+    
+  }

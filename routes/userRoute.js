@@ -21,8 +21,7 @@ userRoute.set('views','./views/user');
 
 userRoute.use(express.static('public'));
 
-userRoute.get('/',auth.isLogout,userController.landingPage);
-userRoute.get('/userHome',auth.isLogin,userController.userHome);
+userRoute.get('/',userController.landingPage);
 
 userRoute.get('/login',auth.isLogout,userController.loginLoad);
 userRoute.post('/login',userController.verifyLogin);
@@ -40,5 +39,12 @@ userRoute.get('/category/:id',userController.categoryLoad);
 userRoute.get('/shop', userController.shopLoad);
 
 userRoute.get('/cart',userController.cartLoad);
-userRoute.get('/addToCart/:id',userController.addToCart);
+userRoute.post('/addToCart',userController.addToCart);
+userRoute.post('/changeQuantity',userController.cartChangeQuantity);
+userRoute.post('/removeFromCart',userController.removeFromCart);
+userRoute.post('/applyCoupon',userController.applyCoupon);
+
+userRoute.get('/wishlist',userController.wishlistLoad);
+userRoute.post('/addToWishlist',userController.addToWishlist);
+
 module.exports = userRoute;

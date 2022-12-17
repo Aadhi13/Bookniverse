@@ -89,7 +89,6 @@ const bStatusUser = async(req, res) => {
     try {
         const id = req.query.id;
         const userData = await user.findById({_id:id});
-        console.log(userData, 'userData from bStatusUser');
         if(userData.blockStatus == 1) {
             userData.blockStatus = 0
             await userData.save();

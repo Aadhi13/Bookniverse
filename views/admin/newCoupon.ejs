@@ -83,49 +83,43 @@
             <div class="overview">
                 <div class="title">
                     <i class="uil uil-tachometer-fast-alt"></i>
-                    <span class="text">Edit Category Detais</span>
+                    <span class="text">Add new coupon</span>
                 </div>
                 <div>
                     <div class="col-sm-12 col-xl-6">
                         <div class="bg-light rounded h-100 p-4">
-                            <form id="form" action="/admin/editCategory/<%= category._id %>" method="post" enctype="multipart/form-data">
+                            <form id="form" action="/admin/newCoupon" method="post">
                                 <div class="form-floating mb-3">
-                                    <input name="name" type="text" class="form-control" id="name"
-                                        placeholder="Book name" value="<%= category.name %>" required>
-                                    <label for="name">Category name</label>
+                                    <input name="name" type="text" class="form-control" id="couponName"
+                                        placeholder="Coupen Name" required>
+                                    <label for="name">Coupon Name</label>
                                 </div>
                                 <div class="form-floating mb-3">
-                                    <input name="image" type="file" class="form-control" id="image"
-                                        accept="image/png, image/gif, image/jpeg">
-                                    <label for="image">Image</label>
+                                    <input name="couponCode" type="text" class="form-control" id="couponCode"
+                                        placeholder="Coupon Code" required>
+                                    <label for="name">Coupon Code</label>
                                 </div>
-                                <div>
-                                    <img src="<%= category.imagePath %>" width="75px" class="ms-1 mb-3" alt="">
+                                <div class="form-floating mb-3">
+                                    <input name="discountPercentage" type="number" class="form-control" id="name"
+                                        placeholder="Coupon Percentage" required>
+                                    <label for="name">Coupon Precentage</label>
                                 </div>
-                                <fieldset>
-                                    <legend class="col-form-label col-sm-2 pt-0">Status</legend>
-                                    <div class="col-sm-10">
-                                        <div class="form-check">
-                                            <input type="radio" name="blockStatus" value="0" <% if(category.blockStatus== 0){ %> checked <% } %> class="form-check-input"
-                                                id="gridRadios1">
-                                            <label class="form-check-label" for="gridRadios1">
-                                                Enable
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input type="radio" name="blockStatus" value="1" <% if(category.blockStatus== 1){ %> checked <% } %> class="form-check-input"
-                                                id="gridRadios2">
-                                            <label class="form-check-label" for="gridRadios2">
-                                                Disable
-                                            </label>
-                                        </div>
-                                    </div>
-                                </fieldset>
-                                <button type="submit" class="btn mt-3 me-2 btn-success">Update category</button>
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="floatingSelect"
+                                        aria-label="Floating label select example" name="blockStatus" required>
+                                        <option selected value="">Status</option>
+                                        <option value="0">Enable</option>
+                                        <option value="1">Disable</option>
+                                    </select>
+                                    <label for="floatingSelect">Choose from here</label>
+                                </div>
+                                
+                                <button type="submit" class="btn mt-3 me-2 btn-success">Add coupon</button>
                                 <button type="reset" class="btn mt-3 btn-info">Reset</button>
                             </form>
                         </div>
                     </div>
+                    <h4 class="mt-3"><%=message%></h4>
                 </div>
             </div>
         </div>

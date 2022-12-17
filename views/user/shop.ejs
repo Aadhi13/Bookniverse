@@ -28,49 +28,20 @@
 <body>
     <!-- Topbar Start -->
     <div class="container-fluid">
-        <div class="row bg-secondary py-2 px-xl-5">
-            <div class="col-lg-6 d-none d-lg-block">
-                <div class="d-inline-flex align-items-center">
-                    <a class="text-dark" href="">FAQs</a>
-                    <span class="text-muted px-2">|</span>
-                    <a class="text-dark" href="">Help</a>
-                    <span class="text-muted px-2">|</span>
-                    <a class="text-dark" href="">Support</a>
-                </div>
-            </div>
-            <div class="col-lg-6 text-center text-lg-right">
-                <div class="d-inline-flex align-items-center">
-                    <a class="text-dark px-2" href="">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                    <a class="text-dark px-2" href="">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a class="text-dark px-2" href="">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                    <a class="text-dark px-2" href="">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    <a class="text-dark pl-2" href="">
-                        <i class="fab fa-youtube"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
         <div class="row align-items-center py-3 px-xl-5">
             <div class="col-lg-3 d-none d-lg-block">
-                <a href="/userHome" class="text-decoration-none">
+                <a href="/" class="text-decoration-none">
                     <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">Book</span>Mart</h1>
                 </a>
             </div>
             <div class="col-lg-6 col-6 text-left">
                 <form action="">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search for products">
+                        <input type="text" class="form-control" name="searchText" placeholder="Search for products">
                         <div class="input-group-append">
                             <span class="input-group-text bg-transparent text-primary">
-                                <i class="fa fa-search"></i>
+                                <button type="submit" style="border: none; background:none"><i
+                                class="fa fa-search"></i></button>
                             </span>
                         </div>
                     </div>
@@ -117,25 +88,26 @@
                     </button>
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         <div class="navbar-nav mr-auto py-0">
-                            <a href="/userHome" class="nav-item nav-link">Home</a>
+                            <a href="/" class="nav-item nav-link">Home</a>
                             <a href="/shop" class="nav-item nav-link active">Shop</a>
+                            <a href="/cart" class="nav-item nav-link">Cart</a>
                             <a href="/account" class="nav-item nav-link">Account</a>
                             <a href="/aboutus" class="nav-item nav-link">About Us</a>
                         </div>
                         <div class="navbar-nav ml-auto py-0">
-                          <% if(user) { %>
-                            <div class="navbar-nav ml-auto py-0">
-                                <a href="/userProfile/<%= user._id %> " class="nav-item nav-link">
-                                    <%= user.name %>
-                                </a>
-                                <a href="/logout" class="nav-item nav-link">Logout</a>
-                            </div>
-                        <% } else { %>
-                            <div class="navbar-nav ml-auto py-0">
-                                <a href="/login" class="nav-item nav-link">Login</a>
-                                <a href="/signup" class="nav-item nav-link">Register</a>
-                            </div>
-                        <% } %>
+                            <% if(user) { %>
+                                <div class="navbar-nav ml-auto py-0">
+                                    <a style="font-weight: 600; font-size: large;" href="/userProfile/<%= user._id %> " class="nav-item nav-link">
+                                        <%= user.name %>
+                                    </a>
+                                    <a href="/logout" class="nav-item nav-link">Logout</a>
+                                </div>
+                            <% } else { %>
+                                <div class="navbar-nav ml-auto py-0">
+                                    <a href="/login" class="nav-item nav-link">Login</a>
+                                    <a href="/signup" class="nav-item nav-link">Register</a>
+                                </div>
+                            <% } %>
                         </div>
                     </div>
                 </nav>
@@ -236,10 +208,11 @@
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <form action="">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Search by name">
+                                    <input type="text" class="form-control" name="searchText" placeholder="Search by name">
                                     <div class="input-group-append">
                                         <span class="input-group-text bg-transparent text-primary">
-                                            <i class="fa fa-search"></i>
+                                            <button type="submit" style="border: none; background:none"><i
+                                            class="fa fa-search"></i></button>
                                         </span>
                                     </div>
                                 </div>
@@ -270,9 +243,11 @@
                                         <h6>Rs. <%= product.srp %> </h6><h6 class="text-muted ml-2"><del>Rs. <%= product.mrp %></del></h6>
                                     </div>
                                 </div>
+                                onclick="addToWishlist('<%= product._id %>')"
                                 <div class="card-footer d-flex justify-content-between bg-light border">
                                     <a href="/product/<%= product._id %>" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>View Detail</a>
-                                    <a href="" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Add To Cart</a>
+                                    <a class="btn btn-sm p-0"><button style="border: none; background-color: transparent;" onclick="addToWishlist('<%= product._id %>')"><i class="fas fa-heart text-primary"></i></button></a>
+                                    <a class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1" onclick="addToCart('<%= product._id%>')"></i>Add To Cart</a>
                                 </div>
                             </div>
                         </div>
@@ -392,6 +367,7 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script src="js/cartAndWishlist.js"></script>
 </body>
 
 </html>

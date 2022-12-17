@@ -83,58 +83,54 @@
             <div class="overview">
                 <div class="title">
                     <i class="uil uil-tachometer-fast-alt"></i>
-                    <span class="text">User Details</span>
+                    <span class="text">Coupon Details</span>
                 </div>
 
-                <section>
-                    <div class="">
+                <div>
+                    <section>
                         <div class="table-responsive">
                             <div class="table-wrapper" style="border-radius: 10px;">
-                                <!-- <div class="table-title">
+                                <div class="table-title">
                                     <div class="row">
-                                        <div class="col-sm-8">
-                                            <h2>User <b>Details</b></h2>
-                                        </div>
-            
+                                      <div class="col-sm-4">
+                                          <button type="button" class="btn btn-primary add-new my-3"><i class="fa fa-plus"></i>
+                                              <a href="/admin/newCoupon" style="text-decoration: none; color: white;">Add New Coupon</a>
+                                          </button>
+                                      </div>
                                     </div>
-                                </div> -->
+                                  </div>
                                 <table id="userTable" class="table table-bordered">
                                     <thead>
                                         <tr>
                                             <th>SI No</th>
                                             <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Verified</th>
+                                            <th>Coupon code</th>
+                                            <th>Discount precentage</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <% let count=1; users.forEach((users)=>{ %>
+                                        <% let count=1; coupons.forEach((coupons)=>{ %>
                                             <tr>
                                                 <td>
                                                     <%= count %>
                                                 </td>
                                                 <td>
-                                                    <%= users.name %>
+                                                    <%= coupons.name %>
                                                 </td>
                                                 <td>
-                                                    <%= users.email %>
+                                                    <%= coupons.couponCode%>
                                                 </td>
                                                 <td>
-                                                    <% if(users.is_verified==0){ %>
-                                                        <p>No</p>
-                                                    <% }else{ %>
-                                                        <p>Yes</p>
-                                                    <% } %>
-                                                </td>
+                                                    <%= coupons.discountPercentage %> 
                                                 <td>
-                                                    <a href="/admin/editUser?id=<%= users._id %>"
+                                                    <a href="/admin/editCoupon?id=<%= coupons._id %>"
                                                         class="btn btn-warning m-2">Edit</a>
                                                     <br>
-                                                    <% if(users.blockStatus==0){ %> 
-                                                        <a href="/admin/bStatusUser?id=<%= users._id %>"><button class="btn btn-danger m-2" onclick="return confirm('Are you sure you want to block the user <%= users.name %>')">Block</button></a>
+                                                    <% if(!coupons.blockStatus){ %> 
+                                                        <a href="/admin/bStatusCoupon?id=<%= coupons._id %>"><button class="btn btn-danger m-2" onclick="return confirm('Are you sure you want to block the coupon <%= coupons.name %>')">Block</button></a>
                                                     <% }else{ %> 
-                                                        <a href="/admin/bStatusUser?id=<%= users._id %>"><button class="btn btn-danger m-2" onclick="return confirm('Are you sure you want to unblock the user <%= users.name %>')">Unblock</button></a>
+                                                        <a href="/admin/bStatusCoupon?id=<%= coupons._id %>"><button class="btn btn-danger m-2" onclick="return confirm('Are you sure you want to unblock the coupon <%= coupons.name %>')">Unblock</button></a>
                                                     <% } %> 
                                                 </td>
                                             </tr>
@@ -143,8 +139,8 @@
                                 </table>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                </div>
             </div>
         </div>
     </section>
