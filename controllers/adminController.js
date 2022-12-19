@@ -23,7 +23,7 @@ const loadLogin = async (req, res) => {
 //To logout
 const   logout = async (req, res) => {
     try {
-        delete req.session.user_id;
+        delete req.session.admin_id;
         res.redirect('/admin');
     } catch (error) {
         console.log(error.message);
@@ -115,7 +115,7 @@ const verifyLogin = async (req, res) => {
                     res.redirect('/adminLogin', { message: "Email and password is incorrect" });
                 }
                 else {
-                    req.session.user_id = userData._id;
+                    req.session.admin_id = userData._id;
                     res.redirect('/admin/home');
                 }
             }
