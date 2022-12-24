@@ -99,6 +99,7 @@
                             <a href="/" class="nav-item nav-link ">Home</a>
                             <a href="/shop" class="nav-item nav-link">Shop</a>
                             <a href="/cart" class="nav-item nav-link active">Cart</a>
+                            <a href="/wishlist" class="nav-item nav-link">Wishlist</a>
                             <a href="/account" class="nav-item nav-link">Account</a>
                             <a href="/aboutus" class="nav-item nav-link">About Us</a>
                         </div>
@@ -187,7 +188,7 @@
             <div class="col-lg-4">
                 <form class="mb-5" id="couponForm">
                     <div class="input-group">
-                        <input type="text" name="couponCode" class="form-control p-4" placeholder="Coupon Code" required>
+                        <input type="text" name="couponCode" id="coupenCode" class="form-control p-4" placeholder="Coupon Code" required>
                         <div class="input-group-append">
                             <button class="btn btn-primary" type="submit">Apply Coupon</button>
                         </div>
@@ -204,9 +205,13 @@
                             <h6 class="font-weight-medium">Subtotal</h6>
                             <h6 class="font-weight-medium" id="subtotal">Rs. <%=subTotal%></h6>
                         </div>
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between mb-3">
                             <h6 class="font-weight-medium">Shipping</h6>
                             <h6 class="font-weight-medium" id="shippingcost">Rs. <%=shippingCost%></h6>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <h6 class="font-weight-medium">Coupon discount</h6>
+                            <h6 class="font-weight-medium" id="couponDiscount">Rs. <%=couponDiscount%></h6>
                         </div>
                     </div>
                     <div class="card-footer border-secondary bg-transparent">
@@ -214,7 +219,7 @@
                             <h5 class="font-weight-bold">Total</h5>
                             <h5 class="font-weight-bold" id="total">RS. <%=total%></h5>
                         </div>
-                        <button class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button>
+                        <button onclick="proceedtoCheckout()" class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button>
                     </div>
                 </div>
             </div>

@@ -5,12 +5,19 @@ const banner = require('../models/bannerModel');
 const cart = require('../models/cartModel');
 const coupon = require('../models/couponModel');
 const wishlist = require('../models/wishlistModel');
+const address = require('../models/addressModel');
+const order = require('../models/orderModel');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
 const nodemailer = require('nodemailer');
 const { Query, default: mongoose } = require('mongoose');
 const { response } = require('../routes/userRoute');
+const { stat } = require('fs');
+const { log } = require('console');
 let signupName, signupEmail, signupPassword, OTP, lowest, highest;
+let couponCodeV;
+let totalPrice;
+
 
 //For OTP
 let mailTransporter = nodemailer.createTransport({
@@ -65,7 +72,7 @@ const landingPage = async (req, res) => {
 //To display login page
 const loginLoad = async (req, res) => {
     try {
-        res.render('loginRegister');
+        res.render('loginRegister', {status: true});
     } catch (error) {
         console.log(error.message);
     }
@@ -74,6 +81,7 @@ const loginLoad = async (req, res) => {
 //To verify login
 const verifyLogin = async (req, res) => {
     try {
+        
         const {email, password} = req.body;
         const userData = await user.findOne({ email: email });
         if (userData) {
@@ -108,10 +116,68 @@ const verifyLogin = async (req, res) => {
     }
 }
 
+//To display password reset page to user
+const passwordResetPageLoad = async (req, res) => {
+    try {
+        res.render('passwordReset');
+    } catch (error) {
+        console.log(error.message);
+    }
+
+}
+
+//To send reset otp 
+const resetOtpSend = async (req, res) => {
+    console.log('inside resetOtpSend');
+    try {
+       const userId = req.session.user_id;
+       const userData = await user.findOne({userId:userId});
+       const signupName = user.name;
+       if (userData) {
+        console.log('inside userData');
+        let OTP1 = `${Math.floor(1000 + Math.random() * 9000)}`;
+            OTP = OTP1;
+            let mailDetails = {
+                from: "bookstoreverify@gmail.com",
+                to: signupEmail,
+                subject: "Verify your email address",
+                html: `<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+                        <div style="margin:50px auto;width:70%;padding:20px 0">
+                            <div style="border-bottom:1px solid #eee">
+                                <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Book Store</a>
+                            </div>
+                            <p style="font-size:1.1em">Hi, ${signupName}</p>
+                            <p>Thank you for choosing Book Store. Use the following OTP to complete your Sign Up procedures. OTP is valid for 10 minutes</p>
+                            <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${OTP}</h2>
+                            <p style="font-size:0.9em;">Regards,<br />Store Book</p>
+                            <hr style="border:none;border-top:1px solid #eee" />
+                            <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
+                                <p>Book Store Inc</p>
+                                <p>1600 Amphitheatre Parkway</p>
+                                <p>California</p>
+                            </div>
+                        </div>
+                    </div>`,
+            };
+            mailTransporter.sendMail(mailDetails, function (err, data) {
+                if (err) {
+                    console.log("Error Occurs");
+                } else {
+                    console.log("OTP sent successfully");
+                }
+            });
+            res.json({ status: true });
+       }
+
+    } catch (error) {
+       console.log(error.message); 
+    }
+}
+
 //To display signup page
 const signupLoad = async (req, res) => {
     try {
-        res.render('loginRegister')
+        res.render('loginRegister', {status: false})
     } catch (error) {
         console.log(error.message);
     }
@@ -188,7 +254,7 @@ const otpVerify = async (req, res) => {
                     is_verified: 1
                 }
             );
-            res.render('loginRegister', {SRMessage: "You have successfully registerd, you can now login with your email and password."});
+            res.render('loginRegister', {SRMessage: "You have successfully registerd, you can now login with your email and password.", status:false});
         } else {
             res.render('otpVerify', {FRMessage: "Entered OTP is invalid.", email:signupEmail});
         }
@@ -335,20 +401,25 @@ const cartLoad = async (req, res) => {
             } else {
 
                 console.log('inside else of !products');
+                console.log('products.cartItems',products.cartItems);
+                console.log('products',products);
 
                 let productDetails = products.cartItems;
                 productDetails.forEach((element) => {
                         subTotal += (element.productId.srp * element.quantity);
                 });
-                if (subTotal > 500) shippingCost = 0;
-                else shippingCost = 50;
+                if (subTotal > 500) {
+                    shippingCost = 0;
+                } else {
+                    shippingCost = 50;
+                }
                 total = subTotal + shippingCost;
                 const cartLength = productDetails.length;
                 if (cartLength != 0) {
 
                     console.log('inside cartLength');
                     
-                    res.render('cart', {user:userData, category:categoryData, product:productDetails, cartList:products, cartLength, subTotal:subTotal, shippingCost, total, message:""});
+                    res.render('cart', {user:userData, category:categoryData, product:productDetails, cartList:products, cartLength, subTotal:subTotal, shippingCost, total, couponDiscount:0, message:""});
                 } else if (cartLength == 0) {
 
                     console.log('inside else if of cartLength');                    
@@ -371,10 +442,11 @@ const cartLoad = async (req, res) => {
 
 //To add products into cart
 const addToCart = async (req, res) => {
+    console.log('inside addToCart');
     try {
         const categoryData = await category.find({blockStatus:0});
         if (req.session.user_id) {
-            const proId = req.params.id;
+            const proId = req.body.productId;
             const productId = new mongoose.Types.ObjectId(proId)
             const userId = req.session.user_id;
             
@@ -471,26 +543,31 @@ const wishlistLoad = async (req, res) => {
         if (req.session.user_id) {
             const userId = mongoose.Types.ObjectId(req.session.user_id);
             const userData = await user.findById({_id: req.session.user_id});
-            let products = await wishlist.findOne({userId: userId}).populate('productId').lean();
-            if(!products) {
-                res.send('wishlist404 !products')
+            const userWishList = await wishlist.findOne({userId: userId}).populate('productId').lean();
+            console.log('userWishlist'.userWishList);
+            if(!userWishList) {
+                res.render('wishlist', {user: userData, category: categoryData, wishlistProducts: false, message: 'Wishlist is empty... Continue shopping...'})
             } else {
-                let productDetails = products; //confused here
-                const wishlistLength = productDetails.length;
+                const productArray = userWishList.productId;
+                const wishlistLength = productArray.length;
                 if (wishlistLength != 0) {
-                    res.render('wishlist', {user: userData, category: categoryData, message: 'Wishlist is empty... Continue shopping...'});
+                    console.log('userWishList',userWishList);
+                    res.render('wishlist', {user: userData, category: categoryData, wishlistProducts:userWishList ,message: false});
+                } else {
+                    res.render('wishlist', {user: userData, category: categoryData, wishlistProducts: false, message: 'Wishlist is empty... Continue shopping...'})
                 }
             }
         } else {
-            res.send('wishlist404 else of req.session.user_id')
+            res.render('wishlist', {user: false, category: categoryData, wishlistProducts: false, message: 'Wishlist is empty... Login to add products into wishlist...'})
         }
     } catch (error) {
         console.log(error.message);
     }
 }
-//Need to finish below code
+
 //To add products into wishlist
 const addToWishlist =  async (req, res) => {
+    console.log('inside addToWishlist');
     try {
         if (req.session.user_id) {
             let userId = req.session.user_id;
@@ -511,11 +588,11 @@ const addToWishlist =  async (req, res) => {
                 }
             } else {
                 try {
-                    const wishlist = new wishlist({
+                    const wishlistData = new wishlist({
                         userId: userId,
                         productId: product_id
                     })
-                    await wishlist.save();
+                    await wishlistData.save();
                     res.json({ wishlistStatus: true });
                 } catch (error) {
                     console.log(error.message);
@@ -529,11 +606,278 @@ const addToWishlist =  async (req, res) => {
     }
 }
 
+//To display user profile page
+const profileLoad = async (req, res) => {
+    const categoryData = await category.find({blockStatus:0});
+    try {
+        if (req.session.user_id) {
+            const userId = req.session.user_id;
+            const userData = await user.findOne({_id:userId}).lean(); 
+            const userAddress = await address.findOne({userId: userId}).lean();
+            if (userAddress) {
+                const address = userAddress.addresses;
+                res.render('profile', {userData, address, category: categoryData});
+            } else {
+                res.render('profile', {userData, address:false, category: categoryData});
+            }
+        } else {
+            res.render('profile',{userData:false, address:false, category:categoryData});
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+//To add new address for user
+const newAddress = async (req, res) => {
+        const { Name, Email, Mobile, HouseName, PostOffice, City, District, State, PIN } = req.body;
+        const userId = req.session.user_id;
+        const adr = await address.findOne({ userId: userId });
+        if (adr) {
+            await address.updateOne({ userId: userId }, { $push: { addresses: { Name, Email, HouseName, Mobile, PostOffice, City, District, State, PIN } } });
+        } else {
+            const addressData = new address({
+                userId: userId,
+                addresses: { Name, Email, Mobile, HouseName, PostOffice, City, District, State, PIN }
+            });
+            await addressData.save();
+        }
+        if (req.body.page == 'checkout') {
+            res.redirect('/checkout');
+        } else {
+            res.redirect('/account');
+        }
+}
+const editName = async (req, res) => {
+    await user.updateOne({ _id: req.body.userId }, { name: req.body.Name });
+    res.json({ status: true });
+}
+
+const deleteAddress = async (req, res) => {
+    const userData = await user.findOne({ _id: req.session.user_id});
+    const userId = userData._id;
+    const addressId = req.params.id;
+    await address.updateOne({ userId: userId }, { $pull: { addresses: { _id: addressId } } });
+    res.redirect('/account');
+}
+
+//Proceed to checkout
+const proceedtoCheckout = async (req, res) => {
+    const couponCode = req.body.couponCode;
+    couponCodeV = await coupon.findOne({couponCode:couponCode, blockStatus:false});
+    res.json({ status: true });
+}
+
+//To display checkout page
+const checkoutLoad = async (req, res) => {
+    const categoryData = await category.find({blockStatus:0});
+    try {
+        const userId = req.session.user_id;
+        const userData = await user.findOne({userId:userId});
+        const userAddress = await address.findOne({userId:userId}).lean();
+        if (userAddress) {
+
+            const user_Id = mongoose.Types.ObjectId(userId);
+            let products = await cart.findOne({ userId: user_Id}).populate('cartItems.productId').lean();
+            let subTotal = 0;
+            let shippingCost = 0;
+            let total = 0;
+            let productDetails = products.cartItems;
+                productDetails.forEach((element) => {
+                        subTotal += (element.productId.srp * element.quantity);
+                });
+            if (subTotal > 500) {
+                shippingCost = 0;
+            } else {
+                shippingCost = 50;
+            }
+            if (couponCodeV) {
+                let discountPrice = Math.round(subTotal * couponCodeV.discountPercentage / 100)
+                subTotal = subTotal - discountPrice;
+                total = subTotal + shippingCost;
+            } else {
+                total = subTotal + shippingCost;
+            }
+
+            totalPrice = total;
+            const address = userAddress.addresses;
+            res.render('checkout', {userAddress: address, status: true, total, category: categoryData, user:userData});
+        } else {
+            console.log('else is working');
+            res.render('checkout', {status: false});
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+//To place order
+const placeOrder = async (req, res) => {
+    let addressId;
+    console.log(req.body)
+    const { status, paymentMethod} = req.body;
+    const addressData = req.body.address;
+    paymentMethodAnotherFunction = paymentMethod;
+    // const userEmail = req.session.customer;
+    // const user = await Users.findOne({ Email: userEmail });
+    const userId = req.session.user_id;
+    const orderItems = (await cart.findOne({ userId: userId })).cartItems;
+    const orderInfo = await order.findOne({ userId });
+    const adr = await address.findOne({ userId: userId })
+    if (status == 'first') {
+        const { Name, Email, Mobile, HouseName, PostOffice, City, District, State, PIN } = req.body;
+        if (adr) {
+            await address.updateOne({ userId: userId }, { $push: { addresses: { Name, Email, HouseName, Mobile, PostOffice, City, District, State, PIN } } });
+            addressId = ((await address.findOne({ userId: userId })).addresses)[0]._id;
+            addressId = mongoose.Types.ObjectId(addressId);
+            addressFromAnotherFunction = addressId;
+        } else {
+            const addressData = new address({
+                userId: userId,
+                addresses: { Name, Email, HouseName, Mobile, PostOffice, City, District, State, PIN }
+            });
+            await addressData.save();
+            addressId = ((await address.findOne({ userId: userId })).addresses)[0]._id;
+            addressId = mongoose.Types.ObjectId(addressId);
+            addressFromAnotherFunction = addressId;
+        }
+
+        if (paymentMethod == 'Cash on Delivery') {
+            if (orderInfo) {
+                const shippingAddress = ((await address.findOne({ userId }, { addresses: { $elemMatch: { _id: addressId } } })).addresses)[0];
+                await order.updateOne({ userId: userId }, { $push: { orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice } } });
+                await cart.deleteOne({ userId });
+            } else {
+                const shippingAddress = ((await address.findOne({ userId }, { addresses: { $elemMatch: { _id: addressId } } })).addresses)[0];
+                const order = new order({
+                    userId,
+                    orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice }
+                });
+                await order.save();
+                await cart.deleteOne({ userId });
+            }
+            res.json({ codSuccess: true });
+        } else {
+            const shippingAddress = ((await address.findOne({ userId }, { addresses: { $elemMatch: { _id: addressId } } })).addresses)[0];
+            if (orderInfo) {
+                await order.updateOne({ userId }, { $push: { orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice, status: 'Payment failed' } } });
+            } else {
+                const orderNew = new orders({
+                    userId,
+                    orderDetails: { paymentMethod: paymentMethodAnotherFunction, address: shippingAddress, orderItems, totalPrice, status: 'Payment failed' }
+                });
+                await orderNew.save();
+            }
+            let orderData = await order.findOne({ userId: userId }, { orderDetails: { $slice: -1 } });
+            let total = (orderData.orderDetails[0]).totalPrice;
+            totalFromAnotherFunction = total;
+            let options = {
+                amount: total * 100,
+                currency: 'INR',
+                receipt: '' + orderData.orderDetails[0]._id
+            }
+
+            razorpayInstance.orders.create(options,
+                (err, orderData) => {
+                    if (!err) res.json(orderData);
+                    else res.send(err);
+                }
+            );
+        }
+    } else {
+        addressId = addressData;
+        if (paymentMethod == 'Cash on Delivery') {
+            const shippingAddress = ((await address.findOne({ userId }, { addresses: { $elemMatch: { _id: addressId } } })).addresses)[0];
+            if (orderInfo) {
+                await order.updateOne({ userId: userId }, { $push: { orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice } } });
+                await cart.deleteOne({ userId });
+            } else {
+                const orderData = new order({
+                    userId,
+                    orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice}
+                });
+                await orderData.save();
+                await cart.deleteOne({ userId });
+            }
+            res.json({ codSuccess: true });
+        } else {
+            const shippingAddress = ((await address.findOne({ userId }, { addresses: { $elemMatch: { _id: addressId } } })).addresses)[0];
+            if (orderInfo) {
+                await order.updateOne({ userId }, { $push: { orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice, status: 'Payment failed' } } });
+            } else {
+                const orderNew = new order({
+                    userId,
+                    orderDetails: { paymentMethod: paymentMethodAnotherFunction, address: shippingAddress, orderItems, totalPrice, status: 'Payment failed' }
+                });
+                await orderNew.save();
+            }
+            let orderData = await order.findOne({ userId: userId }, { orderDetails: { $slice: -1 } });
+            let total = orderData.orderDetails[0].totalPrice;
+            totalFromAnotherFunction = total;
+            addressFromAnotherFunction = addressId;
+            let options = {
+                amount: total * 100,
+                currency: 'INR',
+                receipt: '' + orderData.orderDetails[0]._id
+            };
+
+            razorpayInstance.order.create(options,
+                (err, orderData) => {
+                    if (!err) res.json(orderData);
+                    else {
+                        res.send(err);
+                    }
+                }
+            );
+        }
+    } 
+}
+
+//order Confirmation Page
+const orderConfirmationPage = async (req, res) => {
+    try {
+        const categoryData = await category.find({blockStatus:0});
+        const user_Id = req.session.user_id;
+        const userData = await user.findOne({userId:user_Id});
+        const userId = (await user.findOne({ userId: user_Id}))._id;
+        const orderData = await order.findOne({userId: userId}, {orderDetails: {$slice: -1}}).lean();
+        const orderDetails = (orderData.orderDetails)[0];
+        const date = orderDetails.createdAt.toDateString();
+        res.render('orderConfirmationPage', {orderDetails, date, category: categoryData, user: userData});
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+//To display orders page
+const orderPage = async (req, res) => {
+    try {
+        const categoryData = await category.find({blockStatus:0});
+        const user_Id = req.session.user_id;
+        const userData = await user.findOne({userId:user_Id});
+        const userId = mongoose.Types.ObjectId(req.session.user_id);
+        let allOrders = await order.findOne({userId});
+        if(allOrders) {
+            allOrders = allOrders.orderDetails;
+            allOrders.forEach(e => {
+                date = e.createdAt;
+                e.date = date.toDateString();
+            })
+            res.render('order', {allOrders, user: userData, category: categoryData, message:false});
+        } else {
+            res.render('order', { message: 'No orders found... Continue shopping...', user: userData, category: categoryData, allOrders:false});
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
 module.exports = {
     landingPage,
     loginLoad,
     securePassword,
     verifyLogin,
+    passwordResetPageLoad,
     signupLoad,
     signup,
     userLogout,
@@ -548,5 +892,15 @@ module.exports = {
     removeFromCart,
     applyCoupon,
     wishlistLoad,
-    addToWishlist
+    addToWishlist,
+    profileLoad,
+    newAddress,
+    editName,
+    deleteAddress,
+    checkoutLoad,
+    proceedtoCheckout,
+    placeOrder,
+    orderConfirmationPage,
+    orderPage,
+    resetOtpSend
 }

@@ -155,8 +155,8 @@
                                 </div>
                                 <div class="col-md-4 mt-3">
                                     
-                                    <button data-toggle="modal" href="/addToCart/<%= product._id%>" data-target="#exampleModal1"
-                                        onclick="cartList('')" class="btn rounded text-light"
+                                    <button data-toggle="modal" onclick="addToCart('<%= product._id %>')" data-target="#exampleModal1"
+                                        class="btn rounded text-light"
                                         style="background-color: rgb(255, 94, 0); width: 100%; height: 45px; font-weight: 700;">Add To Cart</button>
                                 </div>
                             </div>
@@ -273,6 +273,7 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script src="/js/cartAndWishlist.js"></script>
 </body>
 
 </html>

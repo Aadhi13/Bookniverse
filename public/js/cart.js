@@ -69,11 +69,11 @@ $('#couponForm').submit((e) => {
                     let shipping_Cost = 0;
                     let currentSubTotal = parseInt($('#subtotal').html().replace(/^\D+/g, ''));
                     console.log(currentSubTotal);
-                    if (currentSubTotal < 20000) {
-                        $('#shippingcost').html('₹50');
+                    if (currentSubTotal < 500) {
+                        $('#shippingcost').html('Rs. 50');
                         shipping_Cost = 50;
                     } else {
-                        $('#shippingcost').html('₹0');
+                        $('#shippingcost').html('Rs. 0');
                         shipping_Cost = 0;
                     }
 
@@ -85,8 +85,9 @@ $('#couponForm').submit((e) => {
                     subTotal = subTotal - discountPrice;
                     $('#discount').removeClass('d-none');
                     $('#discountPrice').removeClass('d-none');
-                    $('#discountPrice').html('₹' + discountPrice);
-                    $('#total').html('₹' + (subTotal + shipping_Cost));
+                    $('#discountPrice').html('Rs.' + discountPrice);
+                    $('#couponDiscount').html('Rs. ' + (discountPrice));
+                    $('#total').html('Rs. ' + (subTotal + shipping_Cost));
                 }
             } else {
                 $('#invalidCoupon').removeClass('d-none');
@@ -98,12 +99,14 @@ $('#couponForm').submit((e) => {
 
 function proceedtoCheckout() {
     let total = document.getElementById('total').innerHTML;
+    let couponCode = document.getElementById('coupenCode').value;
 
     $.ajax({
         url: '/proceedtoCheckout',
         method: 'post',
         data: {
-            total: total
+            total: total,
+            couponCode: couponCode
         },
         success: (response) => {
             location.href = '/checkout'

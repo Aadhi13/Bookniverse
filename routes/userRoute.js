@@ -28,9 +28,11 @@ userRoute.post('/login',userController.verifyLogin);
 userRoute.get('/signup',auth.isLogout,userController.signupLoad);
 userRoute.post('/signup',userController.signup);
 userRoute.get('/logout',auth.isLogin,userController.userLogout);
+userRoute.get('/forgotPassword',userController.passwordResetPageLoad);
 
 userRoute.get('/otpVerify', userController.otpVerifyLoad);
 userRoute.post('/otpVerify', userController.otpVerify);
+userRoute.post('/resetOtpSend', userController.resetOtpSend);
 
 userRoute.get('/product/:id',userController.productLoad);
 
@@ -45,6 +47,18 @@ userRoute.post('/removeFromCart',userController.removeFromCart);
 userRoute.post('/applyCoupon',userController.applyCoupon);
 
 userRoute.get('/wishlist',userController.wishlistLoad);
-userRoute.post('/addToWishlist',userController.addToWishlist);
+userRoute.post('/addToWishlist',auth.isLogin,userController.addToWishlist);
+
+userRoute.get('/account',userController.profileLoad);
+userRoute.post('/newAddress',auth.isLogin,userController.newAddress);
+userRoute.post('/editName',auth.isLogin,userController.editName);
+userRoute.get('/deleteAddress/:id',auth.isLogin,userController.deleteAddress);
+
+userRoute.post('/proceedtoCheckout',auth.isLogin,userController.proceedtoCheckout);
+userRoute.get('/checkout',auth.isLogin,userController.checkoutLoad);
+userRoute.post('/placeOrder',auth.isLogin,userController.placeOrder);
+userRoute.get('/orderConfirmationPage',auth.isLogin,userController.orderConfirmationPage);
+
+userRoute.get('/orders',auth.isLogin,userController.orderPage)
 
 module.exports = userRoute;

@@ -11,7 +11,7 @@
 <body>
     <section>
         <div class="main">
-            <input type="checkbox" id="chk" aria-hidden="true">
+            <input <% if(status) { %>checked<% } %> type="checkbox" id="chk" aria-hidden="true">
 
             <div class="signup">
                 <form id="form" action="/signup" method="post">
@@ -29,6 +29,9 @@
                     <input type="email" name="email" placeholder="Email" required="">
                     <input type="password" name="password" placeholder="Password" required="">
                     <button type="submit">Login</button>
+                    <div class="mb-2" style="text-align: center;">
+                        <a class="text-info" href="/forgotPassword" style="text-decoration: underline; color: red;">Forgot password?</a>
+                    </div>
                 </form>
             </div>
         </div>

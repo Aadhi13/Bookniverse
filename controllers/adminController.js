@@ -33,8 +33,9 @@ const   logout = async (req, res) => {
 //To display admin home page
 const loadHome = async (req, res) => {
     try {
-        const userData = await user.findById({ _id: req.session.user_id });
-        res.render('home', { admin: userData });
+        const adminData = await user.findById({ _id: req.session.admin_id });
+        console.log('adminData',adminData);
+        res.render('home', { admin: adminData });
     } catch (error) {
         console.log(error.message);
     }
@@ -112,7 +113,7 @@ const verifyLogin = async (req, res) => {
             const passwordMatch = await bcrypt.compare(password, userData.password);
             if (passwordMatch) {
                 if (userData.is_admin === 0) {
-                    res.redirect('/adminLogin', { message: "Email and password is incorrect" });
+                    res.render('adminLogin', { message: "Email and password is incorrect" });
                 }
                 else {
                     req.session.admin_id = userData._id;
@@ -120,11 +121,11 @@ const verifyLogin = async (req, res) => {
                 }
             }
             else {
-                res.redirect('/adminLogin', { message: "Email and password is incorrect" });
+                res.render('adminLogin', { message: "Email and password is incorrect" });
             }
         }
         else {
-            res.redirect('/adminLogin', { message: "Email and password is incorrect" });
+            res.render('adminLogin', { message: "Email and password is incorrect" });
         }
 
     } catch (error) {
