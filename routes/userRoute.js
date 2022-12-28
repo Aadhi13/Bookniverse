@@ -33,6 +33,8 @@ userRoute.get('/forgotPassword',userController.passwordResetPageLoad);
 userRoute.get('/otpVerify', userController.otpVerifyLoad);
 userRoute.post('/otpVerify', userController.otpVerify);
 userRoute.post('/resetOtpSend', userController.resetOtpSend);
+userRoute.post('/resetOtpSubmit', userController.resetOtpSubmit);
+userRoute.post('/submitNewPassword', userController.submitNewPassword);
 
 userRoute.get('/product/:id',userController.productLoad);
 
@@ -57,8 +59,10 @@ userRoute.get('/deleteAddress/:id',auth.isLogin,userController.deleteAddress);
 userRoute.post('/proceedtoCheckout',auth.isLogin,userController.proceedtoCheckout);
 userRoute.get('/checkout',auth.isLogin,userController.checkoutLoad);
 userRoute.post('/placeOrder',auth.isLogin,userController.placeOrder);
+userRoute.post('/verifyPayment',auth.isLogin,userController.verifyPayment);
 userRoute.get('/orderConfirmationPage',auth.isLogin,userController.orderConfirmationPage);
 
 userRoute.get('/orders',auth.isLogin,userController.orderPage)
+userRoute.post('/orderedProducts',auth.isLogin,userController.orderedProducts);
 
 module.exports = userRoute;

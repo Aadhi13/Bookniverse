@@ -57,6 +57,10 @@
                     <i class="uil uil-clipboard-blank"></i>
                     <span class="link-name">Coupons</span>
                 </a></li>
+                <li><a href="/admin/orders">
+                    <i class="uil uil-clipboard-blank"></i>
+                    <span class="link-name">Orders</span>
+                </a></li>
             </ul>
             
             <ul class="logout-mode">
@@ -100,9 +104,19 @@
                                     <label for="name">Coupon Code</label>
                                 </div>
                                 <div class="form-floating mb-3">
+                                    <input name="expiryDate" type="date" class="form-control" id="expiryDate"
+                                        placeholder="Expiry Date" value="<%= coupon.expiryDate %>" required>
+                                    <label for="expiryDate">Expiry Date</label>
+                                </div>
+                                <div class="form-floating mb-3">
                                     <input name="discountPercentage" type="number" class="form-control" id="name"
                                         placeholder="Coupon Percentage" value="<%= coupon.discountPercentage %>" required>
                                     <label for="name">Coupon Precentage</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input name="priceLimit" type="number" class="form-control" id="couponPriceLimit"
+                                        placeholder="Coupon Price Limit" value="<%= coupon.priceLimit%>" required>
+                                    <label for="couponPriceLimit">Coupon Price Limit</label>
                                 </div>
                                 <div class="form-floating mb-3">
                                     <select class="form-select" id="floatingSelect"

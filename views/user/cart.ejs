@@ -100,13 +100,14 @@
                             <a href="/shop" class="nav-item nav-link">Shop</a>
                             <a href="/cart" class="nav-item nav-link active">Cart</a>
                             <a href="/wishlist" class="nav-item nav-link">Wishlist</a>
+                            <a href="/orders" class="nav-item nav-link">Orders</a>
                             <a href="/account" class="nav-item nav-link">Account</a>
                             <a href="/aboutus" class="nav-item nav-link">About Us</a>
                         </div>
                         <div class="navbar-nav ml-auto py-0">
                             <% if(user) { %>
                                 <div class="navbar-nav ml-auto py-0">
-                                    <a style="font-weight: 600; font-size: large;" href="/userProfile/<%= user._id %> " class="nav-item nav-link">
+                                    <a style="font-weight: 600; font-size: large;" href="/account" class="nav-item nav-link">
                                         <%= user.name %>
                                     </a>
                                     <a href="/logout" class="nav-item nav-link">Logout</a>
@@ -194,8 +195,10 @@
                         </div>
                     </div>
                 </form>
-                <p id="invalidCoupon" class="text-danger mt-1 mb-4 ml-1 d-none">Invalid coupon code</p>
-                <p id="couponApplied" class="text-success mt-1 mb-4 ml-1 d-none">Coupon Applied</p>
+                <p id="expiredCoupon" class="text-danger mt-1 mb-4 ml-1 d-none">This coupon is expired.</p>
+                <p id="invalidCoupon" class="text-danger mt-1 mb-4 ml-1 d-none">Invalid coupon code.</p>
+                <p id="couponApplied" class="text-success mt-1 mb-4 ml-1 d-none">Coupon Applied.</p>
+                <p id="priceLimitExceed" class="text-danger mt-1 mb-4 ml-1 d-none">This coupon is not valid at this price.</p>
                 <div class="card border-secondary mb-5">
                     <div class="card-header bg-secondary border-0">
                         <h4 class="font-weight-semi-bold m-0">Cart Summary</h4>

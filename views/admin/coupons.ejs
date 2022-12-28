@@ -56,6 +56,10 @@
                     <i class="uil uil-clipboard-blank"></i>
                     <span class="link-name">Coupons</span>
                 </a></li>
+                <li><a href="/admin/orders">
+                    <i class="uil uil-clipboard-blank"></i>
+                    <span class="link-name">Orders</span>
+                </a></li>
             </ul>
             
             <ul class="logout-mode">
@@ -105,7 +109,9 @@
                                             <th>SI No</th>
                                             <th>Name</th>
                                             <th>Coupon code</th>
+                                            <th>Expiry Date</th>
                                             <th>Discount precentage</th>
+                                            <th>Price Limit</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -119,10 +125,17 @@
                                                     <%= coupons.name %>
                                                 </td>
                                                 <td>
-                                                    <%= coupons.couponCode%>
+                                                    <%= coupons.couponCode %>
+                                                </td>
+                                                <td>
+                                                    <%= coupons.expiryDate %> 
                                                 </td>
                                                 <td>
                                                     <%= coupons.discountPercentage %> 
+                                                </td>
+                                                <td>
+                                                    <%= coupons.priceLimit %> 
+                                                </td>
                                                 <td>
                                                     <a href="/admin/editCoupon?id=<%= coupons._id %>"
                                                         class="btn btn-warning m-2">Edit</a>

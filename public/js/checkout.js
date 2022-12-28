@@ -8,6 +8,7 @@ $('#checkoutForm').submit((e) => {
             if (response.codSuccess){
                 location.href = '/orderConfirmationPage';
             } else {
+                console.log(response);
                 razorPayment(response);
             }
         }
@@ -15,15 +16,16 @@ $('#checkoutForm').submit((e) => {
 })
 
 function razorPayment(order) {
+    console.log(order);
     let options = {
-        'key': 'rzp_test_eXHeIXDXI5A5em',
+        'key': 'rzp_test_byX4xjQdkJOyzX',
         'amount': order.amount,
         'currency': 'INR',
-        'name': 'PHONEMART',
-        'description': 'PHONEMART cash transaction',
+        'name': 'BOOKNIVERSE',
+        'description': 'BOOKNIVERSE cash transaction',
         'order_id': order.id,
         'handler': (response) => {
-            verifyPayment(response, order)
+            verifyPayment(response,order)
         },
         'prefill': {
             'name': 'user',
@@ -34,7 +36,7 @@ function razorPayment(order) {
             'address': 'Razorpay Corporate Office'
         },
         'theme': {
-            'color': '#FFD333'
+            'color': '#ba6a62'
         }
     }
     let rzp1 = new Razorpay(options);
@@ -53,7 +55,7 @@ function verifyPayment(payment, order) {
             if (response.status) {
                 location.href = '/orderConfirmationPage';
             } else {
-                alert('Payment failed');
+                alert('Payment failed'); 
             }
         }
     })

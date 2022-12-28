@@ -6,6 +6,7 @@ const categoryController = require('../controllers/categoryController');
 const productController = require('../controllers/productController');
 const bannerController = require('../controllers/bannerController');
 const couponController = require('../controllers/couponController');
+const orderController = require('../controllers/orderController');
 const auth = require('../middleware/adminAuth');
 const uploadToFile = require('../middleware/multer');
 const oneDay = 1000 * 60 * 60 * 24;
@@ -71,5 +72,9 @@ adminRoute.post('/newCoupon',auth.isLogin,couponController.addNewCoupon);
 adminRoute.get('/bStatusCoupon',auth.isLogin,couponController.bStatusCoupon);
 adminRoute.get('/editCoupon',auth.isLogin,couponController.loadEditCoupon);
 adminRoute.post('/editCoupon/:id',auth.isLogin,couponController.editCoupon);
+
+adminRoute.get('/orders',auth.isLogin,orderController.loadOrder);
+adminRoute.get('/editOrder',auth.isLogin,orderController.loadEditOrder);
+adminRoute.post('/changeOrderStatus',auth.isLogin,orderController.changeOrderStatus);
 
 module.exports = adminRoute;

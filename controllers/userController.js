@@ -14,9 +14,16 @@ const { Query, default: mongoose } = require('mongoose');
 const { response } = require('../routes/userRoute');
 const { stat } = require('fs');
 const { log } = require('console');
-let signupName, signupEmail, signupPassword, OTP, lowest, highest;
+const Razorpay = require('razorpay');
+let signupName, signupEmail, signupPassword, OTP, lowest, highest, resetEmail;
 let couponCodeV;
 let totalPrice;
+
+var razorpayInstance = new Razorpay({
+    key_id: 'rzp_test_byX4xjQdkJOyzX',
+    key_secret: 'GwkQn36GPCizkzfcgmLcsFBN',
+});
+
 
 
 //For OTP
@@ -128,28 +135,27 @@ const passwordResetPageLoad = async (req, res) => {
 
 //To send reset otp 
 const resetOtpSend = async (req, res) => {
-    console.log('inside resetOtpSend');
     try {
-       const userId = req.session.user_id;
-       const userData = await user.findOne({userId:userId});
-       const signupName = user.name;
+       const signupEmail = req.body.Email;
+       resetEmail = req.body.Email;
+       const userData = await user.findOne({email:signupEmail});
+       const signupName = userData.name;
        if (userData) {
-        console.log('inside userData');
         let OTP1 = `${Math.floor(1000 + Math.random() * 9000)}`;
             OTP = OTP1;
             let mailDetails = {
                 from: "bookstoreverify@gmail.com",
                 to: signupEmail,
-                subject: "Verify your email address",
+                subject: "Reset Password",
                 html: `<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
                         <div style="margin:50px auto;width:70%;padding:20px 0">
                             <div style="border-bottom:1px solid #eee">
                                 <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Book Store</a>
                             </div>
                             <p style="font-size:1.1em">Hi, ${signupName}</p>
-                            <p>Thank you for choosing Book Store. Use the following OTP to complete your Sign Up procedures. OTP is valid for 10 minutes</p>
+                            <p>Thank you for choosing Book Store. Use the following OTP to complete your Password Reset procedures. OTP is valid for 10 minutes</p>
                             <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${OTP}</h2>
-                            <p style="font-size:0.9em;">Regards,<br />Store Book</p>
+                            <p style="font-size:0.9em;">Regards,<br />Book Store</p>
                             <hr style="border:none;border-top:1px solid #eee" />
                             <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
                                 <p>Book Store Inc</p>
@@ -171,6 +177,33 @@ const resetOtpSend = async (req, res) => {
 
     } catch (error) {
        console.log(error.message); 
+    }
+}
+
+//Verify reset Otp 
+const resetOtpSubmit = async (req, res) => {
+    console.log(OTP,'OTP');
+    try {
+        const { passOtp } = req.body;
+        if (passOtp == OTP) {
+            res.json({ otp: true });
+        } else {
+            res.json({ otp: false });
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+//submitNewPassword
+const submitNewPassword = async (req, res) => {
+    try {
+        const userEmail = resetEmail;
+        let newPassword = await securePassword(req.body.newPassword);
+        await user.updateOne({email:userEmail},{password:newPassword});
+        res.redirect('/login');
+    } catch (error) {
+        console.log(error.message);
     }
 }
 
@@ -380,8 +413,6 @@ const cartLoad = async (req, res) => {
     try {
         if (req.session.user_id) {
 
-            console.log('inside req.session.user_id');
-
             const user1 = req.session.user_id;
             const userId = mongoose.Types.ObjectId(user1);
             const userData = await user.findById({_id: req.session.user_id});
@@ -391,16 +422,15 @@ const cartLoad = async (req, res) => {
             let products = await cart.findOne({ userId: userId }).populate('cartItems.productId').lean();
             
             let subTotal = 0;
+            subTotal_forCoupon = subTotal;
             let shippingCost = 0;
             let total = 0;
             if (!products) {
 
-                console.log('inside !products');
 
                 res.render('cart404', {user:userData, category:categoryData, message: 'Cart is empty... Continue shopping...'});
             } else {
 
-                console.log('inside else of !products');
                 console.log('products.cartItems',products.cartItems);
                 console.log('products',products);
 
@@ -417,12 +447,10 @@ const cartLoad = async (req, res) => {
                 const cartLength = productDetails.length;
                 if (cartLength != 0) {
 
-                    console.log('inside cartLength');
                     
                     res.render('cart', {user:userData, category:categoryData, product:productDetails, cartList:products, cartLength, subTotal:subTotal, shippingCost, total, couponDiscount:0, message:""});
                 } else if (cartLength == 0) {
 
-                    console.log('inside else if of cartLength');                    
 
                     shippingCost = 0;
                     total = 0;
@@ -431,7 +459,6 @@ const cartLoad = async (req, res) => {
             }
         } else {
             
-            console.log('inside else of req.session.user_id');
 
             res.render('cart404', {user:'', category: categoryData});
         }
@@ -442,7 +469,6 @@ const cartLoad = async (req, res) => {
 
 //To add products into cart
 const addToCart = async (req, res) => {
-    console.log('inside addToCart');
     try {
         const categoryData = await category.find({blockStatus:0});
         if (req.session.user_id) {
@@ -456,16 +482,13 @@ const addToCart = async (req, res) => {
                 const productExist = await cart.findOne({ $and: [ {userId}, {cartItems: {$elemMatch: {productId} } } ] });
                 console.log('prdouctExist = ', productExist);
                 if (productExist) {
-                    console.log('inside productExist');
                     await cart.findOneAndUpdate({ $and: [{ userId }, { "cartItems.productId": productId }] }, { $inc: { "cartItems.$.quantity": 1 } });
                     res.send({ success: true });
                 } else {
-                    console.log('inside productExist else');
                     await cart.updateOne({ userId }, { $push: { cartItems: { productId, quantity: 1 } } });
                     res.send({ success: true });
                 }
             } else {
-                console.log('inside userExist else');
                 const cartDetails = new cart ({ userId, cartItems: [{ productId, quantity: 1 }] })
                 await cartDetails.save()
                     .then(() => {
@@ -527,10 +550,34 @@ const removeFromCart = async (req, res) => {
 const applyCoupon = async (req, res) => {
     try {
         let { couponCode } = req.body;
+        let subTotal_forCoupon = 0;
+        const cartData = await cart.findOne({userId: req.session.user_id}).populate('cartItems.productId');
+        let productDetails = cartData.cartItems;
+            productDetails.forEach((element) => {
+                subTotal_forCoupon += (element.productId.srp * element.quantity);
+            });
         couponCode = couponCode.toUpperCase();
-        await coupon.findOne({ couponCode:couponCode, blockStatus: false }).then((result) => {
-            res.json(result);
-        });
+        const couponData = await coupon.findOne({ couponCode:couponCode, blockStatus: false});
+        if (!couponData) {
+            console.log('inside null');
+            res.json({invalid:true});
+        } else {
+            console.log('outside of null');
+            let currentDate = new Date();
+            if (couponData.expiryDate < currentDate.getTime()) {
+                res.json({dateExceed:true});
+            } else {
+                if ( couponData.priceLimit > subTotal_forCoupon) {
+                    console.log('Eligible for coupon');
+                    await coupon.findOne({ couponCode:couponCode, blockStatus: false }).then((result) => {
+                        res.json(result);
+                    });
+                } else {    
+                    console.log('Not eligible for coupon');
+                    res.json({message: 'Not eligible for coupon'});
+                }
+            }
+        }
     } catch (error) {
         console.log(error.message);
     }
@@ -567,7 +614,6 @@ const wishlistLoad = async (req, res) => {
 
 //To add products into wishlist
 const addToWishlist =  async (req, res) => {
-    console.log('inside addToWishlist');
     try {
         if (req.session.user_id) {
             let userId = req.session.user_id;
@@ -712,7 +758,7 @@ const checkoutLoad = async (req, res) => {
 }
 
 //To place order
-const placeOrder = async (req, res) => {
+const placeOrderN = async (req, res) => {
     let addressId;
     console.log(req.body)
     const { status, paymentMethod} = req.body;
@@ -833,6 +879,79 @@ const placeOrder = async (req, res) => {
     } 
 }
 
+const placeOrder = async(req,res)=>{
+    console.log(req.body)
+    const { status, paymentMethod} = req.body;
+    const addressId = req.body.address;
+     const userId = req.session.user_id;
+    const orderItems = (await cart.findOne({ userId: userId })).cartItems;
+    const orderInfo = await order.findOne({ userId });
+    const adr = await address.findOne({ userId: userId })
+        if (paymentMethod == 'Cash on Delivery') {
+            const shippingAddress = ((await address.findOne({ userId }, { addresses: { $elemMatch: { _id: addressId } } })).addresses)[0];
+            if (orderInfo) {
+                await order.updateOne({ userId: userId }, { $push: { orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice } } });
+                await cart.deleteOne({ userId });
+            } else {
+                const orderData = new order({
+                    userId,
+                    orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice}
+                });
+                await orderData.save();
+                await cart.deleteOne({ userId });
+            }
+            res.json({ codSuccess: true });
+        } else {
+            const shippingAddress = ((await address.findOne({ userId },{ addresses: { $elemMatch: { _id: addressId } } })).addresses)[0];
+            if (orderInfo) {
+                await order.updateOne({ userId }, { $push: { orderDetails: { paymentMethod, address: shippingAddress, orderItems, totalPrice, status: 'Payment failed' } } });
+            } else {
+                const orderNew = new order({
+                    userId,
+                    orderDetails: { paymentMethod: paymentMethodAnotherFunction, address: shippingAddress, orderItems, totalPrice, status: 'Payment failed' }
+                });
+                await orderNew.save();
+            }
+            await cart.deleteOne({ userId });
+            let orderData = await order.findOne({ userId: userId }, { orderDetails: { $slice: -1 } });
+            let total = orderData.orderDetails[0].totalPrice;
+            let options = {
+                amount: total * 100,
+                currency: 'INR',
+                receipt: '' + orderData.orderDetails[0]._id
+            };
+
+            razorpayInstance.orders.create(options,
+                (err, orderData) => {
+                    if (!err){
+                        res.json(orderData)
+                    }
+
+                    else {
+                        res.send(err);
+                    }
+                }
+            );
+        }
+}
+
+const verifyPayment = async (req, res) => {
+        console.log('yesss')
+        const userId = mongoose.Types.ObjectId(req.session.user_id);
+        let details = req.body;
+        const crypto = require('crypto');
+        let hmac = crypto.createHmac('sha256', 'GwkQn36GPCizkzfcgmLcsFBN');
+        hmac.update(details.payment.razorpay_order_id + '|' + details.payment.razorpay_payment_id);
+        hmac = hmac.digest('hex')
+        if (hmac == details.payment.razorpay_signature) {
+            await order.updateOne({ orderDetails: { $elemMatch: { _id: details.order.receipt } } }, { 'orderDetails.$.status': 'Order placed' });
+            await cart.deleteOne({ userId: userId })
+            res.json({ status: true })
+        } else {
+            res.json({ status: false });
+        }
+}
+
 //order Confirmation Page
 const orderConfirmationPage = async (req, res) => {
     try {
@@ -872,6 +991,20 @@ const orderPage = async (req, res) => {
     }
 }
 
+//To display ordered products
+const orderedProducts = async (req, res) => {
+    try {
+        const cartId = mongoose.Types.ObjectId(req.body);
+        const userId = mongoose.Types.ObjectId(req.session.user_id);
+        const cartListData = await order.findOne({ userId }, { orderDetails: { $elemMatch: { _id: cartId } } }).populate('orderDetails.orderItems.productId').lean();
+        const cartList = cartListData.orderDetails[0].orderItems;
+        // console.log('cartList = ',cartListData.orderDetails[0].orderItems);
+        console.log('cartList = ',cartList);
+        res.send({cartList});
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 module.exports = {
     landingPage,
     loginLoad,
@@ -902,5 +1035,9 @@ module.exports = {
     placeOrder,
     orderConfirmationPage,
     orderPage,
-    resetOtpSend
+    resetOtpSend,
+    verifyPayment,
+    resetOtpSubmit,
+    submitNewPassword,
+    orderedProducts
 }

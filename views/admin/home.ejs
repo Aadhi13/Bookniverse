@@ -49,6 +49,10 @@
                     <i class="uil uil-clipboard-blank"></i>
                     <span class="link-name">Coupons</span>
                 </a></li>
+                <li><a href="/admin/orders">
+                    <i class="uil uil-clipboard-blank"></i>
+                    <span class="link-name">Orders</span>
+                </a></li>
             </ul>
             
             <ul class="logout-mode">
@@ -83,23 +87,64 @@
                     <div class="box box1">
                         <i class="uil uil-user"></i>
                         <span class="text">Total users</span>
-                        <span class="number">50,120</span>
+                        <span class="number"><%= userCount %> </span>
                     </div>
                     <div class="box box2">
                         <i class="uil uil-files-landscapes"></i>
                         <span class="text">Total products</span>
-                        <span class="number">20,120</span>
+                        <span class="number"><%= productCount %> </span>
                     </div>
                     <div class="box box3">
                         <i class="uil uil-file"></i>
                         <span class="text">Total categories</span>
-                        <span class="number">10,120</span>
+                        <span class="number"><%= categoryCount %> </span>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <script type="text/javascript" src="js/home.js"></script>
+        <input type="hidden" name="" id="placed" value="<%= placeOrderCount %>">
+        <input type="hidden" name="" id="packed" value="<%= packedCount %>">
+        <input type="hidden" name="" id="shipped" value="<%= shippedCount %>">
+        <input type="hidden" name="" id="delivered" value="<%= deliveredCount %>">
+        <input type="hidden" name="" id="cancelled" value="<%= cancelledCount %>">
+        <input type="hidden" name="" id="failed" value="<%= failedCount %>">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+        <div>
+        <canvas id="myChart" style="width:100%;max-width:900px; margin: auto; margin-top: 40px;"></canvas>
+        <script>
+            const a = parseInt(document.getElementById('placed').value)
+            const b = parseInt(document.getElementById('packed').value)
+            const c = parseInt(document.getElementById('shipped').value)
+            const d = parseInt(document.getElementById('delivered').value)
+            const e = parseInt(document.getElementById('cancelled').value)
+            const f = parseInt(document.getElementById('failed').value)
+
+            var xValues = ["Order placed","Packed", "Shipped", "Delivered", "Cancelled", "failed"];
+            var yValues = [a,b,c,d,e,f];
+            var barColors = ["MediumSeaGreen","blue", "yellow", "green", "red", "Tomato"];
+
+            new Chart("myChart", {
+                type: "bar",
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        backgroundColor: barColors,
+                        data: yValues
+                    }]
+                },
+                options: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: "Order Details"
+                    }
+                }
+            });
+        </script>
+        </div>
+        <script type="text/javascript" src="js/home.js"></script>
+    </section>
 </body>
 </html>

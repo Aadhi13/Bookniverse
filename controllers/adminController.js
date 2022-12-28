@@ -1,5 +1,10 @@
 const bcrypt = require('bcrypt');
 const user = require('../models/userModel');
+const products = require("../models/productModel");
+const category = require("../models/categoryModel");
+const orders = require('../models/orderModel');
+
+
 
 //Hashing password
 const securePassword = async (password) => {
@@ -21,7 +26,7 @@ const loadLogin = async (req, res) => {
 }
 
 //To logout
-const   logout = async (req, res) => {
+const logout = async (req, res) => {
     try {
         delete req.session.admin_id;
         res.redirect('/admin');
@@ -33,9 +38,48 @@ const   logout = async (req, res) => {
 //To display admin home page
 const loadHome = async (req, res) => {
     try {
+        let userCount = await user.countDocuments();
+        let productCount = await products.countDocuments();
+        let categoryCount = await category.countDocuments();
+
+        const allOrders = await orders.aggregate([
+            {
+                $project: {
+                    orderDetails: {
+                        $filter: {
+                            input: '$orderDetails',
+                            as: 'orderDetails',
+                            cond: {}
+                        },
+                    },
+                    _id: 0,
+                },
+            },
+        ]);
+        let orderCount = 0;
+        let failedCount = 0;
+        let placeOrderCount = 0;
+        let packedCount = 0;
+        let shippedCount = 0;
+        let deliveredCount = 0;
+        let cancelledCount = 0;
+
+        if (allOrders) {
+            allOrders.forEach((e) => {
+                orderCount += e.orderDetails.length
+                e.orderDetails.forEach((f) => {
+                    if (f.status === 'Order placed') placeOrderCount += 1;
+                    else if (f.status === 'Payment failed') failedCount += 1;
+                    else if (f.status === 'Packed') packedCount += 1;
+                    else if (f.status === 'Shipped') shippedCount += 1;
+                    else if (f.status === 'Delivered') deliveredCount += 1;
+                    else if (f.status === 'Cancelled') cancelledCount += 1;
+                })
+            })
+        }
         const adminData = await user.findById({ _id: req.session.admin_id });
         console.log('adminData',adminData);
-        res.render('home', { admin: adminData });
+        res.render('home', { admin: adminData, userCount, orderCount, productCount, categoryCount, placeOrderCount, failedCount, packedCount, shippedCount, deliveredCount, cancelledCount });
     } catch (error) {
         console.log(error.message);
     }

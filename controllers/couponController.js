@@ -76,7 +76,7 @@ const loadEditCoupon = async (req, res) => {
 const editCoupon = async (req, res) => {
     try {
         const id = req.params.id;
-        let {name, couponCode, discountPercentage, blockStatus} = req.body;
+        let {name, couponCode, expiryDate, discountPercentage, priceLimit, blockStatus} = req.body;
         if (blockStatus == 0) {
             blockStatus = false;
         } else {
@@ -87,7 +87,9 @@ const editCoupon = async (req, res) => {
                 $set: {
                     name: name,
                     couponCode: couponCode,
+                    expiryDate: expiryDate,
                     discountPercentage: discountPercentage,
+                    priceLimit: priceLimit,
                     blockStatus: blockStatus
                 }
             });
