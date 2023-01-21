@@ -18,7 +18,7 @@ This is a complete e-commerce website for buying books. This is my first project
 
 ## Installation
 You can use this code by installing the dependencies by running 
-'npm i'
+`npm i`
 
 
 Live site: https://bookniverse.ml
